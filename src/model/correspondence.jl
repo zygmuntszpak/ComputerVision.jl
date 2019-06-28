@@ -1,16 +1,16 @@
 import Base.getindex
 import Base.length
 
-abstract type AbstractCorrespondence end
+abstract type AbstractCorrespondences end
 
-struct Correspondence{N,T} <: AbstractCorrespondence
+struct Correspondences{N,T} <: AbstractCorrespondences
     x::NTuple{N,T}
 end
 
-function getindex(correspondence::Correspondence, index)
-    getindex(correspondence.x, index)
+function getindex(correspondences::Correspondences, index)
+    getindex(correspondences.x, index)
 end
 
-function length(correspondence::Correspondence)
-    length(correspondence.x)
+function length(correspondences::Correspondences)
+    length(correspondences.x)
 end

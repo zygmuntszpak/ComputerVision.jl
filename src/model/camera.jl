@@ -5,16 +5,26 @@ abstract type AbstractCameraModel end
 abstract type AbstractIntrinsicParameters end
 abstract type AbstractExtrinsicParameters end
 
+# TODO revisit principal point and origin
 Base.@kwdef mutable struct IntrinsicParameters <: AbstractIntrinsicParameters
     focal_length::Float64 = 50
     width::Int = 1000
     height::Int = 1000
-    # Origin of the picture plane (the image).
-    origin::Point{2,Float64} = Point(0.0, 0.0)
+    # Origin of the picture plane (the image) is the optical axis.
+    #origin::Point{2,Float64} = Point(0.0, 0.0)
+    # The principal point offset with respect to te Optical Axis coordinate system
+    principal_point::Point{2,Float64} = Point(0.0, 0.0)
     # Basis vectors that characterise the coordinate system of the
     # picture plane (the image).
-    𝐞₁::Vec{2,Float64} = Vec(-1.0, 0.0)
-    𝐞₂::Vec{2,Float64} = Vec(0.0, -1.0)
+    coordinate_system = OpticalSystem()
+    # 𝐞₁::Vec{2,Float64} = Vec(-1.0, 0.0)
+    # 𝐞₂::Vec{2,Float64} = Vec(0.0, -1.0)
+end
+
+function to_matrix(intrinsics::IntrinsicParameters)
+    f = get_focal_length(intrinsics)
+    𝐩 = get_principal_point(intrinsics)
+    𝐊 = @SMatrix [f 0 𝐩[1]; 0 f 𝐩[2]; 0 0 1]
 end
 
 function get_focal_length(param::IntrinsicParameters)
@@ -41,38 +51,57 @@ function set_height!(param::IntrinsicParameters, height::Int)
     param.height = height
 end
 
-function get_origin(param::IntrinsicParameters)
-    param.origin
+# function get_origin(param::IntrinsicParameters)
+#     param.origin
+# end
+#
+# function set_origin!(param::IntrinsicParameters, origin::Point{2,Float64})
+#     param.origin = origin
+# end
+
+function get_principal_point(param::IntrinsicParameters)
+    param.principal_point
 end
 
-function set_origin!(param::IntrinsicParameters, origin::Point{2,Float64})
-    param.origin = origin
+function set_principal_point!(param::IntrinsicParameters, principal_point::Point{2,Float64})
+    param.principal_point = principal_point
 end
 
-function get_e₁(param::IntrinsicParameters)
-    param.e₁
+function get_coordinate_system(param::IntrinsicParameters)
+    param.coordinate_system
 end
 
-function set_e₁!(param::IntrinsicParameters, e₁::Vec{2,Float64})
-    param.e₁ = e₁
+function set_coordinate_system!(param::IntrinsicParameters, coordinate_system::AbstractPlanarCoordinateSystem)
+    param.coordinate_system = coordinate_system
 end
 
-function get_e₂(param::IntrinsicParameters)
-    param.e₂
-end
-
-function set_e₂!(param::IntrinsicParameters, e₂::Vec{2,Float64})
-    param.e₂ = e₂
-end
+#
+# function get_e₁(param::IntrinsicParameters)
+#     param.e₁
+# end
+#
+# function set_e₁!(param::IntrinsicParameters, e₁::Vec{2,Float64})
+#     param.e₁ = e₁
+# end
+#
+# function get_e₂(param::IntrinsicParameters)
+#     param.e₂
+# end
+#
+# function set_e₂!(param::IntrinsicParameters, e₂::Vec{2,Float64})
+#     param.e₂ = e₂
+# end
 
 Base.@kwdef mutable struct ExtrinsicParameters <: AbstractExtrinsicParameters
     # Center of projection.
     centroid::Point{3,Float64} = Point(0.0, 0.0, 0.0)
     # Basis vectors that characterise the pose of the camera
-    𝐞₁::Vec{3,Float64} = Vec(-1.0, 0.0, 0.0)
-    𝐞₂::Vec{3,Float64} = Vec(0.0, -1.0, 0.0)
-    𝐞₃::Vec{3,Float64} = Vec(0.0, 0.0, 1.0)
+    coordinate_system = CartesianSystem(Vec(-1.0, 0.0, 0.0), Vec(0.0, -1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    # 𝐞₁::Vec{3,Float64} = Vec(-1.0, 0.0, 0.0)
+    # 𝐞₂::Vec{3,Float64} = Vec(0.0, -1.0, 0.0)
+    # 𝐞₃::Vec{3,Float64} = Vec(0.0, 0.0, 1.0)
 end
+
 
 function get_centroid(param::ExtrinsicParameters)
     param.centroid
@@ -82,29 +111,38 @@ function set_centroid!(param::ExtrinsicParameters, centroid::Point{3,Float64})
     param.centroid = centroid
 end
 
-function get_e₁(param::ExtrinsicParameters)
-    param.e₁
+function get_coordinate_system(param::ExtrinsicParameters)
+    param.coordinate_system
 end
 
-function set_e₁!(param::ExtrinsicParameters, e₁::Vec{3,Float64})
-    param.e₁ = e₁
+function set_coordinate_system!(param::ExtrinsicParameters, coordinate_system::AbstractCoordinateSystem)
+    param.coordinate_system = coordinate_system
 end
 
-function get_e₂(param::ExtrinsicParameters)
-    param.e₂
-end
-
-function set_e₂!(param::ExtrinsicParameters, e₂::Vec{3,Float64})
-    param.e₂ = e₂
-end
-
-function get_e₃(param::ExtrinsicParameters)
-    param.e₃
-end
-
-function set_e₃!(param::ExtrinsicParameters, e₃::Vec{3,Float64})
-    param.e₃ = e₃
-end
+#
+# function get_e₁(param::ExtrinsicParameters)
+#     param.e₁
+# end
+#
+# function set_e₁!(param::ExtrinsicParameters, e₁::Vec{3,Float64})
+#     param.e₁ = e₁
+# end
+#
+# function get_e₂(param::ExtrinsicParameters)
+#     param.e₂
+# end
+#
+# function set_e₂!(param::ExtrinsicParameters, e₂::Vec{3,Float64})
+#     param.e₂ = e₂
+# end
+#
+# function get_e₃(param::ExtrinsicParameters)
+#     param.e₃
+# end
+#
+# function set_e₃!(param::ExtrinsicParameters, e₃::Vec{3,Float64})
+#     param.e₃ = e₃
+# end
 
 Base.@kwdef mutable struct  Pinhole{T₁ <: AbstractIntrinsicParameters, T₂ <: AbstractExtrinsicParameters} <: AbstractCameraModel
     intrinsics::T₁ = IntrinsicParameters()
@@ -146,4 +184,30 @@ end
 
 function set_image_type!(camera::Camera, image_type::AbstractImage)
     camera.image_type = image_type
+end
+
+
+function rotate!(camera::Camera,  𝐑::AbstractArray)
+    model = get_model(camera)
+    extrinsics = get_extrinsics(model)
+    coordinate_system = get_coordinate_system(extrinsics)
+    𝐞₁ = get_e₁(coordinate_system)
+    𝐞₂ = get_e₂(coordinate_system)
+    𝐞₃ = get_e₃(coordinate_system)
+    𝐞₁′ = 𝐑*𝐞₁
+    𝐞₂′ = 𝐑*𝐞₂
+    𝐞₃′ = 𝐑*𝐞₃
+    set_coordinate_system!(extrinsics, CartesianSystem(𝐞₁′,𝐞₂′,𝐞₃′))
+end
+
+function translate!(camera::Camera, 𝐭::AbstractArray)
+    model = get_model(camera)
+    extrinsics = get_extrinsics(model)
+    𝐜 = get_centroid(extrinsics)
+    set_centroid!(extrinsics, 𝐜 + 𝐭)
+end
+
+function relocate!(camera::Camera, 𝐑::AbstractArray, 𝐭::AbstractArray)
+    rotate!(camera, 𝐑)
+    translate!(camera, 𝐭)
 end

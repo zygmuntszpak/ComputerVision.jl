@@ -2,7 +2,13 @@ abstract type AbstractImage end
 abstract type AbstractAnalogueImage <: AbstractImage end
 abstract type AbstractDigitalImage <: AbstractImage end
 
-struct AnalogueImage <: AbstractAnalogueImage end
+Base.@kwdef struct AnalogueImage{T₁ <: AbstractPlanarCoordinateSystem} <: AbstractAnalogueImage
+    coordinate_system::T₁ = PlanarCartesianSystem(Vec(-1.0, 0.0), Vec(0.0, -1.0))
+end
+
+function get_coordinate_system(image::AnalogueImage)
+    image.coordinate_system
+end
 
 # function get_data(image::AnalogueImage)
 #     image.data
