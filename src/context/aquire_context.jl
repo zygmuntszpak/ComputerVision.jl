@@ -14,6 +14,8 @@ struct TwoViewExperimentContext <: TwoViewContext end
 #     return image_points
 # end
 
+# TODO reconcile this with the ability to change reference coordinate systems (i.e. making a particular camera the coordinate system)
+# TODO perhaps allow specifciation of what coordinate system one is considering for the image aquisition
 function (aquire::AquireImageContext)(world::PrimitiveWorld, camera::AbstractCamera)
     world_coordinate_system = get_coordinate_system(world)
     points = get_points(world)

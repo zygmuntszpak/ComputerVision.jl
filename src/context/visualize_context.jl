@@ -280,11 +280,12 @@ function draw_3D_points!(scene::PGFPlotsX.Axis, markersize::Real, points::Vector
 end
 
 function draw_camera!(scene::Union{AbstractPlotting.Scene, PGFPlotsX.Axis}, scale::Real, linewidth::Number, intrinsics::IntrinsicParameters, extrinsics::ExtrinsicParameters)
-    optical_center = Point3f0(get_centroid(extrinsics))
+
     image_width = get_width(intrinsics)
     image_height = get_height(intrinsics)
     f = get_focal_length(intrinsics)
     camera_system = get_coordinate_system(extrinsics)
+    optical_center = Point3f0(get_origin(camera_system))
     𝐞₁ = get_e₁(camera_system)
     𝐞₂ = get_e₂(camera_system)
     𝐞₃ = get_e₃(camera_system)

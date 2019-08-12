@@ -1,7 +1,7 @@
 abstract type AbstractWorld end
 
 Base.@kwdef mutable struct PrimitiveWorld{T₁ <: AbstractCoordinateSystem, T₂ <: AbstractVector, T₃ <: Union{Plane, PlaneSegment}, T₄ <: AbstractAllotment} <: AbstractWorld
-    coordinate_system::T₁ = CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    coordinate_system::T₁ = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
     points::Vector{T₂} = [Point3(rand(-1000.0:1000.0), rand(-1000.0:1000.0), 500.0) for n = 1:5000]
     groups::Vector{T₄} =  [IntervalAllotment(1:5000)]
     planes::Vector{T₃} = [Plane(Vec3(0.0, 0.0, 1.0), 500)]

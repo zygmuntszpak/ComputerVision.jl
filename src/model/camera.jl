@@ -1,3 +1,4 @@
+
 abstract type AbstractCamera end
 
 abstract type AbstractCameraModel end
@@ -94,21 +95,36 @@ end
 
 Base.@kwdef mutable struct ExtrinsicParameters <: AbstractExtrinsicParameters
     # Center of projection.
-    centroid::Point{3,Float64} = Point(0.0, 0.0, 0.0)
+    #centroid::Point{3,Float64} = Point(0.0, 0.0, 0.0)
     # Basis vectors that characterise the pose of the camera
-    coordinate_system = CartesianSystem(Vec(-1.0, 0.0, 0.0), Vec(0.0, -1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    coordinate_system = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(-1.0, 0.0, 0.0), Vec(0.0, -1.0, 0.0), Vec(0.0, 0.0, 1.0))
     # 𝐞₁::Vec{3,Float64} = Vec(-1.0, 0.0, 0.0)
     # 𝐞₂::Vec{3,Float64} = Vec(0.0, -1.0, 0.0)
     # 𝐞₃::Vec{3,Float64} = Vec(0.0, 0.0, 1.0)
 end
 
 
-function get_centroid(param::ExtrinsicParameters)
-    param.centroid
+function get_origin(param::ExtrinsicParameters)
+    get_origin(param.coordinate_system)
 end
 
-function set_centroid!(param::ExtrinsicParameters, centroid::Point{3,Float64})
-    param.centroid = centroid
+# function set_centroid!(param::ExtrinsicParameters, centroid::Point{3,Float64})
+#     𝐞₁ = get_e₁(param.coordinate_system)
+#     𝐞₂ = get_e₂(param.coordinate_system)
+#     𝐞₃ = get_e₃(param.coordinate_system)
+#     set_coordinate_system!(param, CartesianSystem(centroid, 𝐞₁, 𝐞₂, 𝐞₃))
+# end
+
+# function set_basis_vectors!(param::ExtrinsicParameters, 𝐞₁::Vec{3,Float64}, 𝐞₂::Vec{3,Float64}, 𝐞₃::Vec{3,Float64})
+#     centroid = get_origin(param)
+#     set_coordinate_system!(param, CartesianSystem(centroid, 𝐞₁, 𝐞₂, 𝐞₃))
+# end
+#
+function get_basis_vectors(param::ExtrinsicParameters)
+    𝐞₁ = get_e₁(param.coordinate_system)
+    𝐞₂ = get_e₂(param.coordinate_system)
+    𝐞₃ = get_e₃(param.coordinate_system)
+    return 𝐞₁, 𝐞₂, 𝐞₃
 end
 
 function get_coordinate_system(param::ExtrinsicParameters)
@@ -190,24 +206,37 @@ end
 function rotate!(camera::Camera,  𝐑::AbstractArray)
     model = get_model(camera)
     extrinsics = get_extrinsics(model)
-    coordinate_system = get_coordinate_system(extrinsics)
-    𝐞₁ = get_e₁(coordinate_system)
-    𝐞₂ = get_e₂(coordinate_system)
-    𝐞₃ = get_e₃(coordinate_system)
+    # coordinate_system = get_coordinate_system(extrinsics)
+    # 𝐞₁ = get_e₁(coordinate_system)
+    # 𝐞₂ = get_e₂(coordinate_system)
+    # 𝐞₃ = get_e₃(coordinate_system)
+    𝐞₁, 𝐞₂, 𝐞₃ = get_basis_vectors(extrinsics)
     𝐞₁′ = 𝐑*𝐞₁
     𝐞₂′ = 𝐑*𝐞₂
     𝐞₃′ = 𝐑*𝐞₃
-    set_coordinate_system!(extrinsics, CartesianSystem(𝐞₁′,𝐞₂′,𝐞₃′))
+    𝐨 = get_origin(extrinsics)
+    set_coordinate_system!(extrinsics, CartesianSystem(𝐨, 𝐞₁′,𝐞₂′,𝐞₃′))
 end
 
 function translate!(camera::Camera, 𝐭::AbstractArray)
     model = get_model(camera)
     extrinsics = get_extrinsics(model)
-    𝐜 = get_centroid(extrinsics)
-    set_centroid!(extrinsics, 𝐜 + 𝐭)
+    𝐨 = get_origin(extrinsics)
+    𝐞₁, 𝐞₂, 𝐞₃ = get_basis_vectors(extrinsics)
+    set_coordinate_system!(extrinsics, CartesianSystem(𝐨 + 𝐭, 𝐞₁, 𝐞₂, 𝐞₃))
+    #𝐜 = get_centroid(extrinsics)
+    #set_centroid!(extrinsics, 𝐜 + 𝐭)
 end
 
 function relocate!(camera::Camera, 𝐑::AbstractArray, 𝐭::AbstractArray)
-    rotate!(camera, 𝐑)
-    translate!(camera, 𝐭)
-end
+    model = get_model(camera)
+    extrinsics = get_extrinsics(model)
+    𝐞₁, 𝐞₂, 𝐞₃ = get_basis_vectors(extrinsics)
+    𝐞₁′ = 𝐑*𝐞₁
+    𝐞₂′ = 𝐑*𝐞₂
+    𝐞₃′ = 𝐑*𝐞₃
+    𝐨 = get_origin(extrinsics)
+    set_coordinate_system!(extrinsics, CartesianSystem(𝐨 + 𝐭, 𝐞₁′,𝐞₂′,𝐞₃′))
+    #rotate!(camera, 𝐑)
+    #translate!(camera, 𝐭)
+end#

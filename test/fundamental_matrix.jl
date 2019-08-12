@@ -67,11 +67,11 @@ aquire = AquireImageContext()
 ℳ = aquire(world, camera₁)
 ℳ′ = aquire(world, camera₂)
 
-𝐅 = to_matrix(FundamentalMatrix(camera₁, camera₂))
+𝐅 = matrix(FundamentalMatrix(camera₁, camera₂))
 𝐅 = 𝐅 / norm(𝐅)
 𝐅 = 𝐅 / sign(𝐅[3,3])
 
-𝐅2 = to_matrix(FundamentalMatrix(Projection(camera₁), Projection(camera₂)))
+𝐅2 = matrix(FundamentalMatrix(Projection(camera₁), Projection(camera₂)))
 𝐅2 = 𝐅2 / norm(𝐅2)
 𝐅2 = 𝐅2 / sign(𝐅2[3,3])
 

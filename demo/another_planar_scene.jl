@@ -92,17 +92,24 @@ aquire = AquireImageContext()
 ℳ′ = aquire(world, camera₂)
 
 
+
 #RelativePose(camera₂, camera₁)
 
-default_world_system = CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
-alternative_world_system = CartesianSystem(Vec(-1.0, 0.0, 0.0), Vec(0.0, -1.0, 0.0), Vec(0.0, 0.0, 1.0))
+default_world_system = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
+alternative_world_system = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(-1.0, 0.0, 0.0), Vec(0.0, -1.0, 0.0), Vec(0.0, 0.0, 1.0))
 
+A, B = ascertain_pose(camera₁, alternative_world_system)
+#ascertain_pose(camera₂, default_world_system)
+A'*𝐑₁
 
 F0 = matrix(FundamentalMatrix(camera₁, camera₂, default_world_system))
 F0 = F0 / norm(F0)
 
 F1 = matrix(FundamentalMatrix(camera₁, camera₂, alternative_world_system))
 F1 = F1 / norm(F1)
+
+Fa = matrix(FundamentalMatrix(camera₁, camera₂, get_coordinate_system(get_extrinsics(get_model(camera₁)))))
+Fa = Fa / norm(Fa)
 
 pinholeₐ = Pinhole(intrinsics = IntrinsicParameters(width = 640, height = 480, focal_length = 100))
 analogue_imageₐ = AnalogueImage(coordinate_system = OpticalSystem())

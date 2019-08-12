@@ -10,12 +10,12 @@ function matrix(entity::Projection)
     entity.𝐏
 end
 
-Projection(camera::AbstractCamera) = Projection(camera, CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
-Projection(camera::AbstractCamera, world_system::AbstractCoordinateSystem) = Projection(construct_projection(camera, world_system))
+Projection(camera::AbstractCamera) = Projection(camera, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
+Projection(camera::AbstractCamera, reference_system::AbstractCoordinateSystem) = Projection(construct_projection(camera, reference_system))
 
 
 #Projection(model::AbstractCameraModel) = Projection(model, CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)), PlanarCartesianSystem(Vec(-1.0, 0.0), Vec(0.0, -1.0)))
-#Projection(model::AbstractCameraModel, world_system::AbstractCoordinateSystem, image_system::AbstractPlanarCoordinateSystem) = Projection(construct_projection(model, world_system, image_system))
+#Projection(model::AbstractCameraModel, reference_system::AbstractCoordinateSystem, image_system::AbstractPlanarCoordinateSystem) = Projection(construct_projection(model, reference_system, image_system))
 
 function project(P::Projection, 𝒳::Vector{<: AbstractVector})
     𝐏 = to_matrix(P)
@@ -25,18 +25,18 @@ function project(P::Projection, 𝒳::Vector{<: AbstractVector})
     return ℳ
 end
 
-function construct_projection(camera::AbstractCamera, world_system::AbstractCoordinateSystem)
+function construct_projection(camera::AbstractCamera, reference_system::AbstractCoordinateSystem)
     model = get_model(camera)
     image_type = get_image_type(camera)
     image_system = get_coordinate_system(image_type)
-    construct_projection(model, world_system, image_system)
+    construct_projection(model, reference_system, image_system)
 end
 
-function construct_projection(model::AbstractCameraModel, world_system::AbstractCoordinateSystem, image_system::AbstractPlanarCoordinateSystem)
+function construct_projection(model::AbstractCameraModel, reference_system::AbstractCoordinateSystem, image_system::AbstractPlanarCoordinateSystem)
     intrinsics = get_intrinsics(model)
     extrinsics = get_extrinsics(model)
     𝐊 = to_matrix(intrinsics, image_system)
-    𝐄 = to_matrix(extrinsics, world_system)
+    𝐄 = to_matrix(extrinsics, reference_system)
     𝐏 = 𝐊 * 𝐄
 end
 
@@ -55,29 +55,30 @@ function to_matrix(intrinsics::IntrinsicParameters, image_system::AbstractPlanar
     𝐊′ = vcat(hcat(𝐑', -𝐑'*𝐭), SMatrix{1,3,Float64}(0,0,1)) * 𝐊
 end
 
-function to_matrix(extrinsics::ExtrinsicParameters, world_system::CartesianSystem)
-    𝐑, 𝐭 = ascertain_pose(extrinsics, world_system)
+function to_matrix(extrinsics::ExtrinsicParameters, reference_system::CartesianSystem)
+    𝐑, 𝐭 = ascertain_pose(extrinsics, reference_system)
     𝐄 = [𝐑' -𝐑'*𝐭]
 end
 
-function ascertain_pose(camera::AbstractCamera, world_system::CartesianSystem)
+function ascertain_pose(camera::AbstractCamera, reference_system::CartesianSystem)
     model = get_model(camera)
-    ascertain_pose(get_extrinsics(model), world_system)
+    ascertain_pose(get_extrinsics(model), reference_system)
 end
 
-function ascertain_pose(extrinsics::ExtrinsicParameters, world_system::CartesianSystem)
+function ascertain_pose(extrinsics::ExtrinsicParameters, reference_system::CartesianSystem)
     camera_system = get_coordinate_system(extrinsics)
-    𝐞₁ = get_e₁(world_system)
-    𝐞₂ = get_e₂(world_system)
-    𝐞₃ = get_e₃(world_system)
+    𝐞₁ = get_e₁(reference_system)
+    𝐞₂ = get_e₂(reference_system)
+    𝐞₃ = get_e₃(reference_system)
     𝐞₁′ = get_e₁(camera_system)
     𝐞₂′ = get_e₂(camera_system)
     𝐞₃′ = get_e₃(camera_system)
-    𝐭 = get_centroid(extrinsics)
+    𝐭 = get_origin(camera_system) - get_origin(reference_system)
     𝐑 = inv(hcat(𝐞₁, 𝐞₂, 𝐞₃)) * hcat(𝐞₁′, 𝐞₂′, 𝐞₃′)
     𝐑, 𝐭
 end
 
+# TODO Incorporate information about the origin of the image coordinate system
 function determine_translation(intrinsics::IntrinsicParameters, system::PlanarCartesianSystem)
     width = get_width(intrinsics)
     height = get_height(intrinsics)

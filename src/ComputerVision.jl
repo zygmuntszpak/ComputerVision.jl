@@ -26,7 +26,12 @@ include("context/normalize_data_context.jl")
 include("context/estimate_homography_context.jl")
 include("context/decompose_homography_context.jl")
 include("context/triangulate_context.jl")
+include("context/coordinate_system_transformation_context.jl")
 include("context/visualize_context.jl")
+
+
+export AbstractCoordinateTransformationContext,
+       WorldCoordinateTransformationContext
 
 
 export AbstractAllotment,
@@ -53,6 +58,8 @@ export TriangulateContext,
 
 export AbstractPose,
        RelativePose,
+       CoordinateTransformation,
+       AbstractCoordinateTransformation,
        rotation,
        translation
 
@@ -142,8 +149,10 @@ export  get_focal_length,
         set_width!,
         get_height!,
         set_height!,
-        get_centroid,
-        set_centroid!,
+        #get_centroid,
+        #set_centroid!,
+        get_origin,
+        get_basis_vectors,
         get_intrinsics,
         set_intrinsics,
         get_extrinsics,
