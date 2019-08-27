@@ -8,14 +8,14 @@ struct TriangulateContext{T <: AbstractTriangulationAlgorithm} <: AbstractContex
 end
 
 function (context::TriangulateContext)(camera₁::AbstractCamera, camera₂::AbstractCamera, correspondences::AbstractCorrespondences)
-    context(camera₁, camera₂, correspondences)
+    context.algorithm(camera₁, camera₂, correspondences)
 end
 
 # TODO allow specification of reference coordinate system so that we can construct the appropriate projection matrices
 
-# function (algorithm::DirectLinearTriangulation)(camera₁::AbstractCamera, camera₂::AbstractCamera, correspondences::AbstractCorrespondences)
-#     algorithm(Projection(camera₁, world_system), Projection(camera₂, world_system))
-# end
+function (algorithm::DirectLinearTriangulation)(camera₁::AbstractCamera, camera₂::AbstractCamera, correspondences::AbstractCorrespondences)
+    algorithm(Projection(camera₁), Projection(camera₂), correspondences)
+end
 
 # function (algorithm::DirectLinearTriangulation)(fundamental_matrix::FundamentalMatrix, correspondences::AbstractCorrespondences)
 #     # TODO

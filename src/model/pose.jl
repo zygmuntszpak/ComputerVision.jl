@@ -38,6 +38,7 @@ function construct_relative_pose(camera₁::AbstractCamera, camera₂::AbstractC
     # 𝐑, 𝐭
 end
 
+# system 2 with respect to system 1
 function construct_relative_pose(coordinate_system₁::AbstractCoordinateSystem,  coordinate_system₂::AbstractCoordinateSystem)
     𝐞₁ = get_e₁(coordinate_system₁)
     𝐞₂ = get_e₂(coordinate_system₁)
@@ -45,7 +46,8 @@ function construct_relative_pose(coordinate_system₁::AbstractCoordinateSystem,
     𝐞₁′ = get_e₁(coordinate_system₂)
     𝐞₂′ = get_e₂(coordinate_system₂)
     𝐞₃′ = get_e₃(coordinate_system₂)
-    𝐭 = get_origin(coordinate_system₁) - get_origin(coordinate_system₂)
+    # Mistake, change order TODO
+    𝐭 = get_origin(coordinate_system₂) - get_origin(coordinate_system₁)
     𝐑 = inv(hcat(𝐞₁, 𝐞₂, 𝐞₃)) * hcat(𝐞₁′, 𝐞₂′, 𝐞₃′)
     𝐑, 𝐭
 end

@@ -78,3 +78,6 @@ estimated_points = triangulate_points(camera₁, camera₂, 𝒞)
 for couple in zip(estimated_points, points)
     @test isapprox(norm(first(couple)-last(couple)), 0.0; atol = 1e-7)
 end
+
+
+camera₁

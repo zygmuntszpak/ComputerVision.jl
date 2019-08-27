@@ -96,6 +96,15 @@ camera₂ = ComputerVision.Camera(image_type = analogue_image₂, model = pinhol
 𝐭₂ = [4000.0,0.0, 0.0]
 relocate!(camera₂, 𝐑₂, 𝐭₂)
 
+
+# p = first(project(Projection(camera₁), [SVector(𝐭₁...)]))
+# 𝐊₁ = to_matrix(get_intrinsics(pinhole₁), get_coordinate_system(analogue_image₁))
+
+# 𝐏 = to_matrix(Projection(camera₁))
+# 𝐏 * hom(SVector(𝐭₁...))
+# 𝐊₁ * hom(p)
+
+
 # Q = to_matrix(get_extrinsics(get_model(camera₂)), CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
 # inv(Q[1:3,1:3]) * Q[:,4]
 
@@ -121,7 +130,13 @@ aquire = AquireImageContext()
 ℳ = aquire(world, camera₁)
 ℳ′ = aquire(world, camera₂)
 
-ℳ
+# Verify back projection...
+# L₁ = back_project(camera₁, ℳ)
+# L₂ = back_project(camera₂, ℳ′)
+# world.points[1]
+# on_line(world.points[end], last(L₁); tol = 1e-2)
+# on_line(world.points[end], last(L₂); tol = 1e-2)
+
 
 axis₃ = @pgf PGFPlotsX.Axis({axis_equal="true", view="{60}{30}"});
 visualize₃ = VisualizeWorldContext(; scene = axis₃, visual_properties = PGFPlotsVisualProperties(scale = 150, markersize = 25))

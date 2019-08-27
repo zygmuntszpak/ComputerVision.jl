@@ -38,3 +38,9 @@ end
 function get_segment(plane_segment::PlaneSegment)
     plane_segment.segment
 end
+
+function on_plane(𝐗::AbstractVector, plane::Plane; tol::Number = 1e-10)
+    𝐧 = get_normal(plane)
+    d = get_distance(plane)
+    abs(dot(𝐗,𝐧) - d) < tol ? true : false
+end

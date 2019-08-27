@@ -1,6 +1,6 @@
 module ComputerVision
 
-using StaticArrays, GeometryTypes, LinearAlgebra, Optim, Makie, PGFPlotsX, Colors
+using StaticArrays, GeometryTypes, LinearAlgebra, Optim, Makie, PGFPlotsX, Colors, Statistics
 
 abstract type ProjectiveEntity end
 
@@ -12,6 +12,7 @@ include("model/allotment.jl")
 include("model/image.jl")
 include("model/camera.jl")
 include("model/plane.jl")
+include("model/geometry.jl")
 include("model/world.jl")
 include("model/projection.jl")
 include("model/pose.jl")
@@ -19,24 +20,39 @@ include("model/fundamental_matrix.jl")
 include("model/essential_matrix.jl")
 include("model/homography_matrix.jl")
 include("model/estimators.jl")
+include("model/noise.jl")
 include("view/visualize_properties.jl")
 include("context/context.jl")
+include("context/intersection_context.jl")
 include("context/aquire_context.jl")
 include("context/normalize_data_context.jl")
 include("context/estimate_homography_context.jl")
 include("context/decompose_homography_context.jl")
 include("context/triangulate_context.jl")
 include("context/coordinate_system_transformation_context.jl")
+include("context/synthetic_scene_context.jl")
+include("context/apply_noise_context.jl")
+include("context/experiment_context.jl")
 include("context/visualize_context.jl")
 
 
 export AbstractCoordinateTransformationContext,
-       WorldCoordinateTransformationContext
+       WorldCoordinateTransformationContext,
+       IntersectionContext
 
+export ExperimentContext
+
+export SyntheticSceneContext,
+       PlanarSyntheticScene,
+       AbstractSyntheticScene
+
+export HomogeneousGaussianNoise,
+       ApplyNoiseContext
 
 export AbstractAllotment,
        IntervalAllotment,
-       get_allotment
+       get_allotment,
+       get_interval
 
 export AbstractCorrespondences,
        Correspondences
@@ -72,6 +88,7 @@ export Projection,
        AbstractContext,
        NormalizeDataContext,
        HartleyNormalizeDataContext,
+       AbstractEstimationContext,
        EstimateHomographyContext,
        VisualizeWorldContext,
        MakieVisualProperties,
@@ -80,7 +97,8 @@ export Projection,
 
 export DirectLinearTransform
 
-export project
+export project,
+       back_project
 
 export get_visualize_properties,
        set_scene!,
@@ -101,8 +119,6 @@ export AbstractCoordinateSystem,
 
 export get_coordinate_system
 
-
-
 export AbstractAnalgoueImage,
        AbstractDigitalImage,
        AbstractImage,
@@ -121,9 +137,12 @@ export  AbstractCamera,
 
 export AbstractPlane,
        Plane,
+       Line3D,
        PlaneSegment,
+       EuclideanPlane3D,
        AbstractWorld,
-       PrimitiveWorld
+       PrimitiveWorld,
+       PlanarWorld
 
 
 export  get_points,
@@ -136,7 +155,12 @@ export  get_points,
         get_distance,
         get_plane,
         set_plane,
-        get_segment
+        get_segment,
+        on_plane,
+        on_line
+        distance,
+        normal,
+        origin
 
 export  hom⁻¹,
         hom,

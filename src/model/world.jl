@@ -7,6 +7,14 @@ Base.@kwdef mutable struct PrimitiveWorld{T₁ <: AbstractCoordinateSystem, T₂
     planes::Vector{T₃} = [Plane(Vec3(0.0, 0.0, 1.0), 500)]
 end
 
+Base.@kwdef mutable struct PlanarWorld{T₁ <: AbstractCoordinateSystem, T₂ <: AbstractVector, T₃ <: AbstractAllotment, T₄ <:  AbstractPlane} <: AbstractWorld
+    coordinate_system::T₁ = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    points::Vector{T₂} = [Point3(rand(-1000.0:1000.0), rand(-1000.0:1000.0), 0.0) for n = 1:5000]
+    groups::Vector{T₃} =  [IntervalAllotment(1:5000)]
+    planes::Vector{T₄} = [EuclideanPlane3D(CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))]
+end
+
+
 # function get_xaxis(world::AbstractWorld)
 #     world.xaxis
 # end

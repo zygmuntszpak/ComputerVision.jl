@@ -10,8 +10,8 @@ function matrix(entity::Projection)
     entity.𝐏
 end
 
-Projection(camera::AbstractCamera) = Projection(camera, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
-Projection(camera::AbstractCamera, reference_system::AbstractCoordinateSystem) = Projection(construct_projection(camera, reference_system))
+#Projection(camera::AbstractCamera) = Projection(camera, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
+Projection(camera::AbstractCamera) = Projection(construct_projection(camera, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))))
 
 
 #Projection(model::AbstractCameraModel) = Projection(model, CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)), PlanarCartesianSystem(Vec(-1.0, 0.0), Vec(0.0, -1.0)))
@@ -23,6 +23,50 @@ function project(P::Projection, 𝒳::Vector{<: AbstractVector})
         𝐦 = hom⁻¹(𝐏 * hom(𝐗))
     end
     return ℳ
+end
+
+function back_project(camera::AbstractCamera, ℳ::Vector{<: AbstractVector})
+    extrinsics = get_extrinsics(get_model(camera))
+    𝐞₁, 𝐞₂, 𝐞₃ = get_basis_vectors(extrinsics)
+
+    intrinsics  = get_intrinsics(get_model(camera))
+    image_type = get_image_type(camera)
+    image_system = get_coordinate_system(image_type)
+    f = get_focal_length(intrinsics)
+
+    #reference_system = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    𝐨 = get_origin(extrinsics)
+
+    ℒ = map(ℳ) do 𝐦
+        𝐩 = 𝐨 + 𝐦[1] *𝐞₁ + 𝐦[2] *𝐞₂ + f*𝐞₃
+        L = Line3D(𝐨, 𝐩)
+    end
+
+    return ℒ
+
+    # 𝐑, 𝐭 = ascertain_pose(camera, reference_system)
+    # 𝐦 = ℳ[1]
+    # 𝐩₁ = 𝐨
+    #
+    # 𝐩₂ = 𝐨 + 𝐦[1] *𝐞₁ + 𝐦[2] *𝐞₂ + f*𝐞₃
+    # Line3D(𝐨, 𝐩₂)
+
+    #𝐊 = to_matrix(intrinsics, image_system)
+    # P = Projection(camera)
+    # 𝐏 = to_matrix(P)
+    # 𝐏⁺ = 𝐏' * inv(𝐏*𝐏')
+    # reference_system = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))
+    # 𝐑, 𝐭 = ascertain_pose(camera, reference_system)
+    # #𝐜 = SVector(nullspace(𝐏)...)
+    # 𝐦 = ℳ[1]
+    # 𝐩 = 𝐑 * inv(𝐊)*hom(𝐦)
+    # #𝐩 = hom⁻¹(𝐏⁺ * hom(𝐦))
+    # Line3D(𝐭, 𝐩)
+
+    # ℒ = map(ℳ) do 𝐦
+    #     L = Line3D(𝐜, 𝐏⁺ * hom(𝐦))
+    # end
+    #return ℒ
 end
 
 function construct_projection(camera::AbstractCamera, reference_system::AbstractCoordinateSystem)
@@ -55,7 +99,7 @@ function to_matrix(intrinsics::IntrinsicParameters, image_system::AbstractPlanar
     𝐊′ = vcat(hcat(𝐑', -𝐑'*𝐭), SMatrix{1,3,Float64}(0,0,1)) * 𝐊
 end
 
-function to_matrix(extrinsics::ExtrinsicParameters, reference_system::CartesianSystem)
+function to_matrix(extrinsics::ExtrinsicParameters, reference_system::CartesianSystem = CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
     𝐑, 𝐭 = ascertain_pose(extrinsics, reference_system)
     𝐄 = [𝐑' -𝐑'*𝐭]
 end

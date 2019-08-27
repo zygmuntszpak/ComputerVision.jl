@@ -26,7 +26,12 @@ Base.@kwdef struct OpticalSystem{T₁ <: AbstractVector, T₂ <: AbstractVector}
     𝐞₂::T₂ = Vec(0.0, -1.0)
 end
 
+# TODO depractate get_ convention
 function get_origin(param::AbstractCoordinateSystem)
+    param.𝐨
+end
+
+function origin(param::AbstractCoordinateSystem)
     param.𝐨
 end
 

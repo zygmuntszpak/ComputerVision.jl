@@ -11,14 +11,15 @@ function matrix(entity::HomographyMatrix)
 end
 
 function matrices(entity::HomographyMatrices)
-    entity.ℋ
+    map(x->matrix(x), entity.ℋ)
 end
 
-HomographyMatrices(camera₁::AbstractCamera, camera₂::AbstractCamera, planes::AbstractVector{<:Plane}) = HomographyMatrix(camera₁, camera₂, planes, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
-HomographyMatrices(camera₁::AbstractCamera, camera₂::AbstractCamera, planes::AbstractVector{<:Plane}, reference_system::AbstractCoordinateSystem) = HomographyMatrices(construct_homography_matrices(camera₁, camera₂, planes,  reference_system))
 
-HomographyMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, plane::Plane) = HomographyMatrix(camera₁, camera₂, plane, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
-HomographyMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, plane::Plane, reference_system::AbstractCoordinateSystem) = HomographyMatrix(construct_homography_matrix(camera₁, camera₂, plane,  reference_system))
+HomographyMatrices(camera₁::AbstractCamera, camera₂::AbstractCamera, planes::AbstractVector{<:Plane}) = HomographyMatrices(construct_homography_matrices(camera₁, camera₂, planes,  CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))))
+
+#HomographyMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, plane::Plane) = HomographyMatrix(camera₁, camera₂, plane, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
+HomographyMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, plane::Plane) = HomographyMatrix(construct_homography_matrix(camera₁, camera₂, plane, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))))
+
 
 # function construct_homography_matrices(camera₁::AbstractCamera, camera₂::AbstractCamera, planes::AbstractVector{<:Plane}, reference_system::AbstractCoordinateSystem)
 #     𝐀, b, 𝐀₁, 𝐛₁  = establish_inherent_homography_variables(camera₁, camera₂, reference_system)
@@ -64,7 +65,7 @@ HomographyMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, plane::Pl
 # end
 
 function construct_homography_matrices(camera₁::AbstractCamera, camera₂::AbstractCamera, planes::AbstractVector{<:Plane}, reference_system::AbstractCoordinateSystem)
-    ℋ = [HomographyMatrix(construct_homography_matrix(camera₁, camera₂, plane[i], reference_system)) for i = 1:length(planes)]
+    ℋ = [HomographyMatrix(construct_homography_matrix(camera₁, camera₂, planes[i], reference_system)) for i = 1:length(planes)]
     return ℋ
 end
 

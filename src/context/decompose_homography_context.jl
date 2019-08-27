@@ -4,11 +4,14 @@ struct MalisVargasDecomposition <: AbstractHomographyDecomposition end
 struct FaugerasDecomposition <: AbstractHomographyDecomposition end
 
 
-struct PoseFromSingleHomographyContext{T₁ <: IntrinsicParameters, T₂ <: AbstractAnalogueImage, T₃ <: AbstractHomographyDecomposition} <: AbstractContext
+Base.@kwdef struct PoseFromSingleHomographyContext{T₁ <: IntrinsicParameters, T₂ <: AbstractAnalogueImage, T₃ <: AbstractHomographyDecomposition} <: AbstractContext
      intrinsics::T₁
      image_type::T₂
      algorithm::T₃
+     use_outward_normal_convention::Bool = false
 end
+
+
 
 function (context::PoseFromSingleHomographyContext)(homography::HomographyMatrix)
     𝐊 = to_matrix(context.intrinsics, get_coordinate_system(context.image_type))
@@ -21,13 +24,15 @@ function (context::PoseFromSingleHomographyContext)(homography::HomographyMatrix
     𝐊 = to_matrix(context.intrinsics, get_coordinate_system(context.image_type))
     𝐇 = matrix(homography)
     poses = context.algorithm(𝐇, 𝐊)
-    two_poses = apply_reference_point_visibility_constraint(poses, 𝐊 , correspondences)
+    two_poses = apply_reference_point_visibility_constraint(poses, 𝐊 , correspondences, context.use_outward_normal_convention)
     return two_poses
 end
 
-function apply_reference_point_visibility_constraint(putative_poses::AbstractVector, 𝐊::AbstractMatrix, correspondences::AbstractCorrespondences)
+function apply_reference_point_visibility_constraint(putative_poses::AbstractVector, 𝐊::AbstractMatrix, correspondences::AbstractCorrespondences, use_outward_normal_convention::Bool)
     # We ought to be able to reduce 4 putative solutions down to 2 putative solutions
     # based on the constraint that the points and planar surface need to be in front of the cameras.
+    # The original paper adopts the convention that the normal is facing outward, but
+    # we may also want to use the convention that the normal is facing inward.
     mask = [false, false, false, false]
     ℳ = correspondences[1]
     ℳ′ = correspondences[2]
@@ -35,6 +40,7 @@ function apply_reference_point_visibility_constraint(putative_poses::AbstractVec
     𝐊⁻¹ = inv(𝐊)
     for (k, pose) in enumerate(putative_poses)
         𝐧 = last(pose)
+        #v = use_outward_normal_convention ? [dot(𝐊⁻¹ * hom(ℳ[i]), 𝐧) > 0  for i = 1:N] : [dot(𝐊⁻¹ * hom(ℳ[i]), 𝐧) < 0  for i = 1:N]
         v = [dot(𝐊⁻¹ * hom(ℳ[i]), 𝐧) > 0  for i = 1:N]
         mask[k] = all(v)
     end

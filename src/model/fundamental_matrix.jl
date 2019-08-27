@@ -6,8 +6,8 @@ function matrix(entity::FundamentalMatrix)
     entity.𝐅
 end
 
-FundamentalMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera) = FundamentalMatrix(camera₁, camera₂, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
-FundamentalMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera, world_system_transformation::AbstractCoordinateSystem) = FundamentalMatrix(construct_fundamental_matrix(camera₁, camera₂, world_system_transformation))
+
+FundamentalMatrix(camera₁::AbstractCamera, camera₂::AbstractCamera) = FundamentalMatrix(construct_fundamental_matrix(camera₁, camera₂, CartesianSystem(Point(0.0, 0.0, 0.0), Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0))))
 
 #FundamentalMatrix(model₁::AbstractCameraModel, model₂::AbstractCameraModel) = FundamentalMatrix(model₁, model₂, CartesianSystem(Vec(1.0, 0.0, 0.0), Vec(0.0, 1.0, 0.0), Vec(0.0, 0.0, 1.0)))
 #FundamentalMatrix(model₁::AbstractCameraModel, model₂::AbstractCameraModel, world_system_transformation::AbstractCoordinateSystem) = FundamentalMatrix(construct_fundamental_matrix(model₁, model₂, world_system_transformation))
@@ -25,15 +25,10 @@ function construct_fundamental_matrix(camera₁::AbstractCamera, camera₂::Abst
 end
 
 function construct_fundamental_matrix(model₁::AbstractCameraModel, model₂::AbstractCameraModel,  world_system_transformation::AbstractCoordinateSystem, image_system₁::AbstractPlanarCoordinateSystem, image_system₂::AbstractPlanarCoordinateSystem)
-    @show world_system_transformation
-
     intrinsics₁ = get_intrinsics(model₁)
     𝐊₁ = to_matrix(intrinsics₁, image_system₁)
     extrinsics₁ = get_extrinsics(model₁)
     𝐑₁′, 𝐭₁′ = ascertain_pose(extrinsics₁, world_system_transformation)
-    @show "R1, t1"
-    display(𝐑₁′)
-    display(𝐭₁′)
 
     𝐑₁ = transpose(𝐑₁′)
     𝐭₁ = 𝐭₁′
@@ -47,10 +42,6 @@ function construct_fundamental_matrix(model₁::AbstractCameraModel, model₂::A
     𝐑₂ = transpose(𝐑₂′)
     𝐭₂ = 𝐭₂′
 
-    @show "R2, t2"
-    display(𝐑₂′)
-    display(𝐭₂′)
-
     𝐅 = vec2antisym(𝐊₂*𝐑₂*(𝐭₁ - 𝐭₂))*𝐊₂*𝐑₂/𝐑₁/𝐊₁
 end
 
@@ -62,6 +53,3 @@ function construct_fundamental_matrix(P₁::Projection, P₂::Projection)
     𝐅 = vec2antisym(𝐞₂)*𝐏₂*pinv(𝐏₁)
     SMatrix{3,3,Float64,3*3}(𝐅)
 end
-
-# 𝐏₁ = Projection(model₁, world_system_transformation, image_system)
-# 𝐏₂ = Projection(model₁, world_system_transformation, image_system)

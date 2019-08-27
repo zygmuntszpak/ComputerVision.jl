@@ -1,4 +1,5 @@
-struct EstimateHomographyContext <: AbstractContext end
+abstract type AbstractEstimationContext <: AbstractContext end
+struct EstimateHomographyContext <: AbstractEstimationContext end
 
 function (context::EstimateHomographyContext)(data::AbstractCorrespondences, estimator::AbstractProjectiveEstimationAlgorithm)
     H = estimator(data, context)
