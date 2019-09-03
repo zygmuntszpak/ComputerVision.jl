@@ -124,7 +124,7 @@ function draw_planes!(scene::Union{AbstractPlotting.Scene, PGFPlotsX.Axis}, plan
 end
 
 function draw_planes!(scene::Union{AbstractPlotting.Scene, PGFPlotsX.Axis}, planes::Vector{<: PlaneSegment})
-    @show "plane segment!"
+    #@show "plane segment!"
     for plane in planes
         draw_plane_segment!(scene, plane)
     end
@@ -135,7 +135,7 @@ function construct_segments(plane::EuclideanPlane3D, points::Vector{<: AbstractV
     𝐧 = normal(plane)
     d = distance(plane)
     valid = [(norm(dot(𝐧,points[k]) - d) < 1e-8 ? true : false) for k = 1:length(points) ]
-    display(valid)
+    #display(valid)
     valid_points = points[valid]
 
     # Determine coordinates of planar points with respect to the planes coordinate system

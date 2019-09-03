@@ -24,8 +24,8 @@ pts = [24, 20, 16, 12, 8]
 planar_scene = PlanarSyntheticScene(total_planes = 5, regions_of_interest = rois, points_per_region = pts)
 synthetic_scene_context = SyntheticSceneContext(planar_scene)
 
-world, cameras = synthetic_scene_context()
-camera₁, camera₂ = cameras
+# world, cameras = synthetic_scene_context()
+# camera₁, camera₂ = cameras
 
 
 # axis = Scene()
@@ -44,12 +44,12 @@ camera₁, camera₂ = cameras
 apply_noise_context = ApplyNoiseContext()
 correspondences = apply_noise_context(world, camera₁, camera₂)
 
-
 conduct_experiment = ExperimentContext(synthetic_scene_context, apply_noise_context, EstimateHomographyContext())
-conduct_experiment(DirectLinearTransform())
+estimates, runtimes = conduct_experiment(DirectLinearTransform())
 
-EstimateHomographyContext()
+analyze_experiment = ExperimentAnalysisContext(ReconstructionErrorAnalysis())
 
-# typeof(correspondences)
-# c = correspondences[1]
-# typeof(c)
+analyze_experiment(conduct_experiment, DirectLinearTransform(), estimates, runtimes)
+
+#(context::ExperimentAnalysisContext)(experiment_context::ExperimentContext, algorithm::AbstractProjectiveEstimationAlgorithm, estimates::AbstractVector, runtimes::AbstractVector)
+apply_noise_context

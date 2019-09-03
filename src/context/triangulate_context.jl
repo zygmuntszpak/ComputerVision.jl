@@ -68,7 +68,7 @@ function (algorithm::DirectLinearTriangulation)(projection₁::Projection, proje
     ℳ = correspondences[1]
     ℳ′ = correspondences[2]
     N = length(ℳ)
-    𝒴 = [ linear_triangulate(𝐏₁, 𝐏₂, ℳ[n], ℳ′[n]) for n = 1:N]
+    𝒴 = [linear_triangulate(𝐏₁, 𝐏₂, ℳ[n], ℳ′[n]) for n = 1:N]
 end
 
 function essential_matrix_to_projections(essential_matrix::EssentialMatrix)

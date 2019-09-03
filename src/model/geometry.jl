@@ -6,6 +6,11 @@ function get_coordinate_system(plane::EuclideanPlane3D)
     plane.coordinate_system
 end
 
+# TODO Depracate get_normal
+function get_normal(plane::EuclideanPlane3D)
+    normal(plane)
+end
+
 function normal(plane::EuclideanPlane3D)
     get_e₃(plane.coordinate_system)
 end
@@ -14,8 +19,19 @@ function origin(plane::EuclideanPlane3D)
     origin(plane.coordinate_system)
 end
 
+# TODO Depracate get_distance
+function get_distance(plane)
+    distance(plane)
+end
+
 function distance(plane::EuclideanPlane3D)
     dot(normal(plane), origin(plane))
+end
+
+function on_plane(𝐗::AbstractVector, plane::EuclideanPlane3D; tol::Number = 1e-10)
+    𝐧 = normal(plane)
+    d = distance(plane)
+    abs(dot(𝐗,𝐧) - d) < tol ? true : false
 end
 
 Base.@kwdef struct Line3D{T <: AbstractVector} <: AbstractPlane

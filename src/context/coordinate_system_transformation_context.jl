@@ -62,7 +62,31 @@ function transform_plane(𝐑::AbstractMatrix, 𝐭::AbstractVector, plane::T) w
     else
         T(Vec3(𝐧′...), d′)
     end
+end
 
+function transform_planes(𝐑::AbstractMatrix, 𝐭::AbstractVector, planes::Vector{<: EuclideanPlane3D})
+    [transform_plane(𝐑, 𝐭, planes[k]) for k = 1:length(planes)]
+end
+
+function transform_plane(𝐑::AbstractMatrix, 𝐭::AbstractVector, plane::T) where T <: Union{EuclideanPlane3D}
+    coordinate_system = get_coordinate_system(plane)
+
+    𝐞₁ = get_e₁(coordinate_system)
+    𝐞₂ = get_e₂(coordinate_system)
+    𝐞₃ = get_e₃(coordinate_system)
+    𝐨 = get_origin(coordinate_system)
+    𝐞₁′ = 𝐑' * 𝐞₁
+    𝐞₂′ = 𝐑' * 𝐞₂
+    𝐞₃′ = 𝐑' * 𝐞₃
+    𝐨′ =  𝐑' * (𝐨 - 𝐭)
+    plane′ = EuclideanPlane3D(CartesianSystem(𝐨′, 𝐞₁′, 𝐞₂′, 𝐞₃′))
+    d′ = distance(plane′)
+
+    if d′ < 0
+        return EuclideanPlane3D(CartesianSystem(-𝐨′, 𝐞₁′, 𝐞₂′, -𝐞₃′))
+    else
+        plane′
+    end
 end
 
 function construct_point_on_plane(𝐧::AbstractVector, d::Number)

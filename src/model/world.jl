@@ -75,6 +75,6 @@ function get_planes(world::AbstractWorld)
     world.planes
 end
 
-function set_planes!(world::AbstractWorld, planes::Vector{<: Plane})
+function set_planes!(world::AbstractWorld, planes::Vector{<: Union{Plane,EuclideanPlane3D}})
     world.planes = planes
 end

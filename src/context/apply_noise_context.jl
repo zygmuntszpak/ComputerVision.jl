@@ -1,6 +1,7 @@
+
 Base.@kwdef struct ApplyNoiseContext{T₁ <: AbstractNoiseModel, T₂ <: Integer} <: AbstractContext
-    perturb::T₁ = HomogeneousGaussianNoise(1.0)
-    replications::T₂ = 50
+    perturb::T₁ = HomogeneousGaussianNoise(0.0)
+    replications::T₂ = 1
 end
 
 function (context::ApplyNoiseContext)(world::AbstractWorld, camera₁::AbstractCamera, camera₂::AbstractCamera)

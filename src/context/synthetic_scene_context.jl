@@ -1,9 +1,38 @@
 abstract type AbstractSyntheticScene end
 
 
-struct SyntheticSceneContext{T <: AbstractSyntheticScene} <: AbstractContext
-    scene_type::T
+struct SyntheticSceneContext{T₁ <: AbstractSyntheticScene, T₂ <: AbstractWorld, T₃ <: AbstractCamera} <: AbstractContext
+    scene_type::T₁
+    world::T₂
+    cameras::Vector{T₃}
 end
+
+# SyntheticScene(synthetic_scene::AbstractSynthethicScene) =
+# function SyntheticSceneContext(synthetic_scene::AbstractSynthethicScene)
+#     image_width = 640
+#     image_height = 480
+#     f = 400
+#
+#     pinhole₁ = Pinhole(intrinsics = IntrinsicParameters(width = image_width, height = image_height, focal_length = f))
+#     analogue_image₁ = AnalogueImage(coordinate_system = OpticalSystem())
+#     camera₁ = ComputerVision.Camera(image_type = analogue_image₁, model = pinhole₁)
+#     𝐑₁ = SMatrix{3,3,Float64,9}(rotxyz(0*(pi/180), 0*(pi/180), 0*(pi/180)))
+#     𝐭₁ = [-100.0, -200.0, 0.0]
+#     relocate!(camera₁, 𝐑₁, 𝐭₁)
+#
+#     pinhole₂ = Pinhole(intrinsics = IntrinsicParameters(width = image_width, height = image_height, focal_length = f))
+#     analogue_image₂ = AnalogueImage(coordinate_system = OpticalSystem())
+#     camera₂ = ComputerVision.Camera(image_type = analogue_image₂, model = pinhole₂)
+#     v₁ = rand(-10:10)
+#     v₂ = rand(-10:10)
+#     v₃ = rand(-10:10)
+#     𝐑₂ = SMatrix{3,3,Float64,9}(rotxyz(v₁ * (pi/180), v₂ * (pi/180), v₃ * (pi/180)))
+#     𝐭₂ = [-200.0, -200.0, -700.0]
+#     relocate!(camera₂, 𝐑₂, 𝐭₂)
+#     new(synthetic_scene, camera₁, camera₂)
+# end
+
+
 
 
 Base.@kwdef struct PlanarSyntheticScene{T₁ <: HyperRectangle, T₂ <: Number} <: AbstractSyntheticScene
@@ -14,29 +43,7 @@ end
 
 # TODO Potentially take camera parameters as input?
 function (context::SyntheticSceneContext{<:PlanarSyntheticScene})()
-    image_width = 640
-    image_height = 480
-    f = 400
 
-    pinhole₁ = Pinhole(intrinsics = IntrinsicParameters(width = image_width, height = image_height, focal_length = f))
-    analogue_image₁ = AnalogueImage(coordinate_system = OpticalSystem())
-    camera₁ = ComputerVision.Camera(image_type = analogue_image₁, model = pinhole₁)
-    𝐑₁ = SMatrix{3,3,Float64,9}(rotxyz(0*(pi/180), 0*(pi/180), 0*(pi/180)))
-    𝐭₁ = [-100.0, -200.0, 0.0]
-    relocate!(camera₁, 𝐑₁, 𝐭₁)
-
-    pinhole₂ = Pinhole(intrinsics = IntrinsicParameters(width = image_width, height = image_height, focal_length = f))
-    analogue_image₂ = AnalogueImage(coordinate_system = OpticalSystem())
-    camera₂ = ComputerVision.Camera(image_type = analogue_image₂, model = pinhole₂)
-    v₁ = rand(-10:10)
-    v₂ = rand(-10:10)
-    v₃ = rand(-10:10)
-    # v₁ = 0
-    # v₂ = 0
-    # v₃ = 0
-    𝐑₂ = SMatrix{3,3,Float64,9}(rotxyz(v₁ * (pi/180), v₂ * (pi/180), v₃ * (pi/180)))
-    𝐭₂ = [-200.0, -200.0, -700.0]
-    relocate!(camera₂, 𝐑₂, 𝐭₂)
 
 
     #planes = [generate_random_plane(𝐭₁, 𝐭₂) for k = 1:context.total_planes]
@@ -53,7 +60,11 @@ function (context::SyntheticSceneContext{<:PlanarSyntheticScene})()
     K =  context.scene_type.total_planes
     planes = [generate_random_plane(𝐭₁, 𝐭₂) for k = 1:K]
     D = [sample_points_on_random_plane(points_per_region[k], planes[k], image_width, image_height, boxes[k], camera₁, camera₂) for k = 1:K]
-    intervals = [IntervalAllotment(1:sum(points_per_region))]
+    # Determine which set of points correspond to which planar structure
+    cummulative = OffsetArray(cumsum(vcat([0],points_per_region)), -1)
+    span = [ (cummulative[k-1]+1):cummulative[k] for k = 1:K ]
+    intervals = [IntervalAllotment(span[k]) for k = 1:K]
+    #intervals = [IntervalAllotment(1:sum(points_per_region))]
     𝒳  = collect(Iterators.flatten(D))
 
     # @show length(𝒳)

@@ -1,6 +1,7 @@
 module ComputerVision
 
-using StaticArrays, GeometryTypes, LinearAlgebra, Optim, Makie, PGFPlotsX, Colors, Statistics
+using StaticArrays, GeometryTypes, LinearAlgebra, Optim, Makie, PGFPlotsX, Colors, Statistics, OffsetArrays
+using InplaceOps, LsqFit, ForwardDiff
 
 abstract type ProjectiveEntity end
 
@@ -16,11 +17,16 @@ include("model/geometry.jl")
 include("model/world.jl")
 include("model/projection.jl")
 include("model/pose.jl")
+include("model/latent_variables.jl")
 include("model/fundamental_matrix.jl")
 include("model/essential_matrix.jl")
 include("model/homography_matrix.jl")
+include("model/cost.jl")
 include("model/estimators.jl")
 include("model/noise.jl")
+include("model/synthetic_scene.jl")
+include("model/simulation.jl")
+#include("model/solver.jl")
 include("view/visualize_properties.jl")
 include("context/context.jl")
 include("context/intersection_context.jl")
@@ -30,21 +36,55 @@ include("context/estimate_homography_context.jl")
 include("context/decompose_homography_context.jl")
 include("context/triangulate_context.jl")
 include("context/coordinate_system_transformation_context.jl")
-include("context/synthetic_scene_context.jl")
+# include("context/synthetic_scene_context.jl") #TODO remove
 include("context/apply_noise_context.jl")
 include("context/experiment_context.jl")
+include("context/analyze_experiment_context.jl")
 include("context/visualize_context.jl")
+include("context/summarize_experiment_context.jl")
+include("context/evaluate_uncertainty_context.jl")
+include("context/cost_context.jl")
+include("simulation/simulation_util.jl")
 
+export SummarizeExperimentContext
+
+export UncertaintyContext,
+       UnitNormGauge
+
+export CostContext
+
+export ApproximateMaximumLikelihood,
+       ReprojectionError,
+       AlgebraicLeastSquares,
+       Mahalanobis
+
+export AbstractSimulationSetup,
+       VaryPlanesSimulationSetup,
+       construct_simulation_data,
+       execute_simulation,
+       analyze_simulation
 
 export AbstractCoordinateTransformationContext,
        WorldCoordinateTransformationContext,
        IntersectionContext
 
-export ExperimentContext
+export ExperimentContext,
+       ExperimentAnalysisContext,
+       ReconstructionErrorAnalysis,
+       ReprojectionErrorAnalysis,
+       ParameterErrorAnalysis
 
-export SyntheticSceneContext,
+
+# export SyntheticSceneContext,
+#        PlanarSyntheticScene,
+#        AbstractSyntheticScene
+export SyntheticScene,
        PlanarSyntheticScene,
-       AbstractSyntheticScene
+       AbstractSyntheticScene,
+       AbstractSceneParameters,
+       PlanarSceneParameters
+
+
 
 export HomogeneousGaussianNoise,
        ApplyNoiseContext
@@ -72,6 +112,10 @@ export TriangulateContext,
        AbstractTriangulationAlgorithm,
        DirectLinearTriangulation
 
+export FundamentalNumericalScheme,
+       UndampedVariant,
+       DampedVariant
+
 export AbstractPose,
        RelativePose,
        CoordinateTransformation,
@@ -95,7 +139,13 @@ export Projection,
        PGFPlotsVisualProperties,
        AbstractVisualProperties
 
-export DirectLinearTransform
+export DirectLinearTransform,
+       ImplicitChojnackiSzpak,
+       ExplicitChojnackiSzpak,
+       BundleAdjustment,
+       ConstrainedBundleAdjustment,
+       ConstrainedMahalanobis,
+       ProjectiveEstimationAlgorithm
 
 export project,
        back_project
@@ -125,6 +175,8 @@ export AbstractAnalgoueImage,
        AnalogueImage
 
 #export  get_data
+
+export LatentVariables
 
 export  AbstractCamera,
         AbstractCameraModel,
